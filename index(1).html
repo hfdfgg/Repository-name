@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#f4f6f8">
+    <title>率土知秋助理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+        window.supabase = createClient('https://wqymmnrfvdhygfctcirj.supabase.co', 'sb_publishable_GP5vnnTzRlsLs6htIuBriw_ZpW2cvrT')
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f6f8; color: #1e293b; margin: 0; height: 100dvh; overflow: hidden; -webkit-font-smoothing: antialiased; }
+        .page { display: none; } .page.active { display: flex; flex-direction: column; } .page.active.block-page { display: block; overflow-y: auto; }
+        .glass-card { background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 24px; box-shadow: 0 8px 30px -8px rgba(0, 0, 0, 0.08); }
+        .premium-input { background-color: #f8fafc; border: 1.5px solid #e2e8f0; color: #334155; transition: all 0.25s ease; }
+        .premium-input:focus { outline: none; border-color: #10b981; background-color: #fff; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12); }
+        .bubble-user { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border-radius: 20px 20px 4px 20px; word-break: break-word; box-shadow: 0 4px 12px rgba(16,185,129,0.2); white-space: pre-wrap; }
+        .bubble-ai { background: #fff; color: #1e293b; border-radius: 20px 20px 20px 4px; word-break: break-word; box-shadow: 0 4px 12px rgba(0,0,0,0.04); border: 1px solid #f1f5f9; white-space: pre-wrap; }
+        .bubble-other { background: #fff; color: #1e293b; border-radius: 20px 20px 20px 4px; word-break: break-word; box-shadow: 0 4px 12px rgba(0,0,0,0.04); border: 1px solid #f1f5f9; white-space: pre-wrap; }
+        .btn-primary { background: linear-gradient(to bottom, #10b981, #059669); border: 1px solid #047857; box-shadow: 0 4px 12px rgba(5,150,105,0.3), inset 0 1px 0 rgba(255,255,255,0.2); }
+        .btn-primary:active { transform: scale(0.96); box-shadow: 0 2px 6px rgba(5,150,105,0.3); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .nav-pill { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(24px) saturate(200%); border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 12px 36px -8px rgba(0, 0, 0, 0.12); }
+        .time-divider { text-align: center; font-size: 11px; font-weight: 600; color: #94a3b8; margin: 20px 0; }
+        @keyframes pulse { 0%, 100% { opacity: 0.4; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1); } } 
+        .dot { display: inline-block; animation: pulse 1.4s infinite; margin: 0 2px; }
+        #toast { visibility: hidden; min-width: 260px; background-color: rgba(15, 23, 42, 0.95); color: #fff; text-align: center; border-radius: 16px; padding: 16px 24px; position: fixed; z-index: 10000; left: 50%; bottom: 110px; transform: translateX(-50%); font-size: 14px; font-weight: 500; opacity: 0; transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); line-height: 1.6; box-shadow: 0 15px 30px rgba(0,0,0,0.25); backdrop-filter: blur(10px); }
+        #toast.show { visibility: visible; opacity: 1; bottom: 130px; }
+    </style>
+</head>
+<body class="flex flex-col relative">
+    
+    <div id="maintenance-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[10000] flex items-center justify-center p-6 hidden">
+        <div class="glass-card p-8 w-full max-w-sm text-center">
+            <div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-sm">🚧</div>
+            <h2 class="text-xl font-bold mb-2 text-slate-800">系统升级中</h2>
+            <p class="text-sm text-slate-500 leading-relaxed" id="maintenance-text">请稍后再试...</p>
+        </div>
+    </div>
+
+    <div id="notice-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[9999] flex items-center justify-center p-6 hidden">
+        <div class="glass-card p-6 w-full max-w-sm">
+            <h2 class="text-xl font-bold mb-4 text-center text-slate-800">系统公告</h2>
+            <div class="bg-slate-50 rounded-xl p-4 text-sm text-slate-600 max-h-60 overflow-y-auto whitespace-pre-wrap mb-6 border border-slate-100" id="notice-text"></div>
+            <button onclick="closeNotice()" class="w-full btn-primary text-white font-semibold py-3.5 rounded-xl transition-all">我知道了</button>
+        </div>
+    </div>
+
+    <div id="pwd-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[9999] flex items-center justify-center p-6 hidden">
+        <div class="glass-card p-6 w-full max-w-sm">
+            <h2 class="text-xl font-bold mb-6 text-center text-slate-800">修改密码</h2>
+            <input type="password" id="old-pwd" placeholder="原密码" class="premium-input w-full rounded-xl px-4 py-3.5 mb-3 text-sm">
+            <input type="password" id="new-pwd" placeholder="新密码(至少6位)" class="premium-input w-full rounded-xl px-4 py-3.5 mb-6 text-sm">
+            <div class="flex gap-3">
+                <button onclick="document.getElementById('pwd-modal').classList.add('hidden')" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-xl py-3 transition-colors">取消</button>
+                <button onclick="changePassword()" id="btn-change-pwd" class="w-2/3 btn-primary text-white font-semibold rounded-xl py-3 transition-all">确认修改</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="guide-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[9999] flex items-center justify-center p-6 hidden">
+        <div class="glass-card p-6 w-full max-w-sm">
+            <h2 class="text-xl font-bold mb-4 text-center text-slate-800">使用说明</h2>
+            <div class="bg-slate-50 rounded-xl p-4 text-sm text-slate-600 space-y-3 mb-6 border border-slate-100">
+                <p><b>1. 准备工具：</b>在“考勤”页面点击下载抓包工具（PCAPdroid）。</p>
+                <p><b>2. 如何考勤：</b>在考勤页面点击上传按钮，选择用 PCAPdroid 录制的抓包文件（.pcap）。</p>
+                <p><b>3. 数据清理：</b>为了节约服务器空间，解析成功并导出 Excel 后，数据会自动销毁，不留痕迹。</p>
+                <p><b>4. 打城规则：</b>系统会自动过滤野战，并根据等级和兵力分为【主力】、【拆迁】和【斯巴达】。</p>
+            </div>
+            <button onclick="document.getElementById('guide-modal').classList.add('hidden')" class="w-full btn-primary text-white font-semibold py-3.5 rounded-xl transition-all">我知道了</button>
+        </div>
+    </div>
+
+    <div id="auth-modal" class="fixed inset-0 bg-[#f4f6f8] z-[9999] flex items-center justify-center p-6 hidden">
+        <div class="glass-card p-8 w-full max-w-sm">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-emerald-500/30 mb-4 transform rotate-3">
+                    <span class="text-2xl text-white font-black">率</span>
+                </div>
+                <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight">率土知秋</h2>
+                <p class="text-slate-400 text-sm mt-1">为同盟而生</p>
+            </div>
+            <div class="space-y-4 mb-8">
+                <div class="relative">
+                    <input type="email" id="auth-email" placeholder="邮箱地址" class="premium-input w-full rounded-xl pl-11 pr-4 py-3.5 text-sm">
+                    <svg class="w-5 h-5 text-slate-400 absolute left-4 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path></svg>
+                </div>
+                <div class="relative">
+                    <input type="password" id="auth-password" placeholder="密码(至少6位)" class="premium-input w-full rounded-xl pl-11 pr-4 py-3.5 text-sm">
+                    <svg class="w-5 h-5 text-slate-400 absolute left-4 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                <div class="relative">
+                    <input type="text" id="auth-gamename" placeholder="游戏昵称" class="premium-input w-full rounded-xl pl-11 pr-4 py-3.5 text-sm">
+                    <svg class="w-5 h-5 text-slate-400 absolute left-4 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                </div>
+            </div>
+            <button onclick="handleAuth('login')" class="w-full btn-primary text-white font-semibold py-3.5 rounded-xl mb-3 transition-all">登录</button>
+            <button onclick="handleAuth('signup')" class="w-full bg-white border border-slate-200 text-slate-700 font-semibold py-3.5 rounded-xl hover:bg-slate-50 transition-all active:scale-95">注册账号</button>
+        </div>
+    </div>
+
+    <div id="edit-profile-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[9999] flex items-center justify-center p-6 hidden">
+        <div class="glass-card p-6 w-full max-w-sm">
+            <h2 class="text-xl font-bold mb-6 text-center text-slate-800">编辑资料</h2>
+            <label class="text-xs font-semibold text-slate-500 mb-2 block uppercase tracking-wider">头像底色</label>
+            <div id="preset-avatars" class="flex gap-3 overflow-x-auto py-2 mb-5 no-scrollbar"></div>
+            <label class="text-xs font-semibold text-slate-500 mb-2 block uppercase tracking-wider">上传自定义头像</label>
+            <input type="file" id="edit-avatar-file" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 mb-5">
+            <label class="text-xs font-semibold text-slate-500 mb-2 block uppercase tracking-wider">个人签名</label>
+            <textarea id="edit-bio" rows="3" class="premium-input w-full rounded-xl px-4 py-3 text-sm mb-6 resize-none"></textarea>
+            <div class="flex gap-3">
+                <button onclick="document.getElementById('edit-profile-modal').classList.add('hidden')" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-xl py-3 transition-colors">取消</button>
+                <button onclick="saveProfile()" id="btn-save-profile" class="w-2/3 btn-primary text-white font-semibold rounded-xl py-3 transition-all">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <main class="flex-1 relative overflow-hidden flex flex-col pb-24" id="main-content">
+        <div id="page-home" class="page active block-page h-full p-5 max-w-2xl mx-auto w-full">
+            <div class="mt-10 mb-8 text-center">
+                <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">举报中心</h1>
+                <p class="text-slate-400 text-sm mt-2 font-medium">维护同盟环境，从你我做起</p>
+            </div>
+            <div class="glass-card p-6 space-y-6">
+                <div>
+                    <label class="text-xs font-semibold text-slate-500 mb-2 block uppercase tracking-wider">举报人 (已锁定)</label>
+                    <input type="text" id="reporter" readonly class="premium-input w-full rounded-xl px-4 py-3 text-sm text-slate-400 cursor-not-allowed bg-slate-100 border-transparent">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-500 mb-2 block uppercase tracking-wider">被举报人</label>
+                    <input type="text" id="reported" class="premium-input w-full rounded-xl px-4 py-3 text-sm" placeholder="输入玩家昵称">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-500 mb-2 block uppercase tracking-wider">原因</label>
+                    <textarea id="reason" rows="3" class="premium-input w-full rounded-xl px-4 py-3 text-sm resize-none" placeholder="描述具体违规情况"></textarea>
+                </div>
+                <button onclick="submitReport()" id="submit-btn" class="w-full btn-primary text-white font-semibold py-3.5 rounded-xl transition-all mt-2">确认提交</button>
+            </div>
+        </div>
+
+        <div id="page-ai" class="page h-full max-w-2xl mx-auto w-full relative">
+            <header class="px-5 py-4 bg-[#f4f6f8]/90 backdrop-blur sticky top-0 z-10 flex justify-between items-center border-b border-slate-200/50">
+                <span class="font-extrabold text-slate-800 text-xl tracking-tight">海之蓝 AI</span>
+                <div class="flex items-center gap-2 bg-emerald-100/50 px-3 py-1.5 rounded-full border border-emerald-200">
+                    <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
+                    <span class="text-[11px] font-bold text-emerald-700">智能免费路由</span>
+                </div>
+            </header>
+            <div id="chat-box" class="flex-1 p-5 space-y-6 overflow-y-auto no-scrollbar pb-32">
+                <div class="flex gap-3">
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-md">AI</div>
+                    <div class="bubble-ai p-4 max-w-[85%] text-sm leading-relaxed">你好，我是海之蓝 AI。系统已为你开启智能免费通道，优先使用高速模型。</div>
+                </div>
+            </div>
+            
+            <div class="absolute bottom-[85px] w-full px-5 flex justify-end gap-3 z-10 pointer-events-none">
+                <label class="pointer-events-auto flex items-center gap-1.5 text-xs font-semibold text-slate-500 cursor-pointer bg-white/90 backdrop-blur px-3.5 py-2 rounded-full shadow-sm border border-slate-200/80 transition-all hover:bg-slate-50 active:scale-95">
+                    <input type="checkbox" id="toggle-search" class="accent-emerald-500 w-3.5 h-3.5 rounded"> 联网搜索
+                </label>
+                <label class="pointer-events-auto flex items-center gap-1.5 text-xs font-semibold text-slate-500 cursor-pointer bg-white/90 backdrop-blur px-3.5 py-2 rounded-full shadow-sm border border-slate-200/80 transition-all hover:bg-slate-50 active:scale-95">
+                    <input type="checkbox" id="toggle-thinking" checked class="accent-emerald-500 w-3.5 h-3.5 rounded"> 深度思考
+                </label>
+            </div>
+
+            <div class="absolute bottom-0 w-full p-4 bg-gradient-to-t from-[#f4f6f8] via-[#f4f6f8] to-transparent">
+                <div class="flex items-center glass-card rounded-[20px] p-1.5 pl-4">
+                    <input type="text" id="ai-input" onkeydown="if(event.key==='Enter'){event.preventDefault(); sendMessage();}" class="flex-1 bg-transparent outline-none py-2 text-sm text-slate-700 placeholder-slate-400 font-medium" placeholder="发送指令...">
+                    <button onclick="sendMessage()" id="ai-send" class="btn-primary text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all">发送</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-battle" class="page block-page h-full p-5 max-w-2xl mx-auto w-full">
+            <div class="mt-6 mb-8">
+                <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2">
+                    <svg class="w-7 h-7 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    攻城考勤
+                </h1>
+                <p class="text-slate-400 text-sm mt-1 font-medium">上传抓包文件，本地极速过滤，生成纯净考勤数据</p>
+            </div>
+
+            <div class="glass-card p-5 mb-5 flex items-center justify-between bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border border-blue-100/50">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-800">第一步：下载抓包工具</h3>
+                        <p class="text-[11px] text-slate-500 mt-0.5 font-medium">安卓专用，解压即用 (PCAPdroid)</p>
+                    </div>
+                </div>
+                <a href="https://wqymmnrfvdhygfctcirj.supabase.co/storage/v1/object/public/downloads/PCAPdroid_2.0.2.apk" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl shadow-md shadow-blue-500/20 transition-all active:scale-95">下载</a>
+            </div>
+
+            <div class="glass-card p-8 text-center mb-8">
+                <input type="file" id="pcap-file-input" accept=".pcap" class="hidden" onchange="uploadPcapToServer(event)">
+                <div onclick="document.getElementById('pcap-file-input').click()" id="btn-upload-pcap" class="border-[2.5px] border-dashed border-emerald-200 bg-emerald-50/40 hover:bg-emerald-50 rounded-[20px] p-10 cursor-pointer transition-all flex flex-col items-center justify-center group">
+                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-md mb-5 group-hover:scale-110 group-hover:-translate-y-1 transition-transform duration-300">
+                        <svg class="w-8 h-8 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    </div>
+                    <span class="text-emerald-600 font-bold text-base">第二步：点击上传 PCAP 文件</span>
+                    <span class="text-xs text-slate-400 mt-2 font-medium">前端极速过滤，支持大文件上传</span>
+                </div>
+                <div id="upload-status" class="text-sm font-medium text-slate-600 mt-6 hidden text-left break-words p-5 bg-slate-50 rounded-xl border border-slate-100"></div>
+            </div>
+
+            <div id="battle-result-container" class="hidden space-y-6 pb-8">
+                <div class="flex justify-between items-center px-1">
+                    <h2 class="text-lg font-extrabold text-slate-800 tracking-tight">统计报表</h2>
+                    <button onclick="exportTableToCSV()" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-2.5 px-5 rounded-xl shadow-lg shadow-slate-900/20 transition-all active:scale-95 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        导出 Excel
+                    </button>
+                </div>
+                <div id="tables-wrapper" class="space-y-6"></div>
+            </div>
+        </div>
+
+        <div id="page-forum" class="page h-full max-w-2xl mx-auto w-full relative">
+            <header class="px-5 py-3 bg-[#f4f6f8]/90 backdrop-blur sticky top-0 z-10 flex flex-col border-b border-slate-200/50">
+                <div class="flex justify-between items-center mb-3">
+                    <h1 class="font-extrabold text-slate-800 text-xl tracking-tight">社交大厅</h1>
+                    <span class="text-xs font-bold text-slate-400 bg-slate-200/60 px-3 py-1.5 rounded-lg">公屏2天清理</span>
+                </div>
+                <div class="flex bg-slate-200/50 p-1 rounded-xl">
+                    <button onclick="switchForumTab('public')" id="tab-public" class="flex-1 text-sm font-bold py-2 rounded-lg bg-white shadow-sm text-slate-800 transition-all">同盟频道</button>
+                    <button onclick="switchForumTab('private')" id="tab-private" class="flex-1 text-sm font-bold py-2 rounded-lg text-slate-500 hover:text-slate-700 transition-all">好友私聊</button>
+                </div>
+            </header>
+
+            <div id="forum-public-area" class="flex-1 overflow-y-auto no-scrollbar pb-24 relative">
+                <div id="forum-list" class="p-5 space-y-6">
+                    <div class="text-center text-slate-400 text-sm py-4 font-medium">加载中...</div>
+                </div>
+                <div class="fixed bottom-[90px] left-0 right-0 max-w-2xl mx-auto px-4 z-10">
+                    <div class="flex items-center glass-card rounded-[20px] p-1.5 pl-4 shadow-lg">
+                        <input type="text" id="forum-input" class="flex-1 bg-transparent outline-none py-2 text-sm text-slate-700 placeholder-slate-400 font-medium" placeholder="聊点什么...">
+                        <button onclick="submitPost()" id="post-btn" class="btn-primary text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md transition-all">发送</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="forum-private-area" class="flex-1 overflow-y-auto no-scrollbar pb-24 relative hidden">
+                <div class="p-5 space-y-4">
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="search-friend-id" placeholder="输入玩家ID(纯数字)或昵称..." class="premium-input flex-1 rounded-xl px-4 py-2.5 text-sm">
+                        <button onclick="searchUser()" class="btn-primary text-white px-4 py-2.5 rounded-xl text-sm font-bold shrink-0">搜索</button>
+                    </div>
+                    
+                    <div id="search-result-area" class="space-y-3 mt-2 hidden"></div>
+
+                    <div id="friend-requests-area" class="space-y-3 mt-4 hidden">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">收到的好友申请</h3>
+                        <div id="friend-requests-list" class="space-y-3"></div>
+                    </div>
+
+                    <div class="mt-8">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">我的好友</h3>
+                        <div id="friend-list" class="space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-mine" class="page block-page h-full p-5 max-w-2xl mx-auto w-full">
+            <div class="glass-card p-10 flex flex-col items-center mt-6 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-br from-emerald-400 to-teal-500 opacity-15"></div>
+                <div onclick="openProfileEdit()" class="absolute top-5 right-5 text-xs font-bold text-emerald-700 bg-emerald-100/80 px-4 py-2 rounded-full cursor-pointer hover:bg-emerald-200 transition-colors z-10 backdrop-blur-sm">编辑资料</div>
+                <div class="w-28 h-28 rounded-full bg-slate-100 overflow-hidden ring-[6px] ring-white shadow-xl mb-5 relative z-10">
+                    <img id="mine-avatar-img" src="" class="w-full h-full object-cover">
+                </div>
+                <h2 class="text-2xl font-extrabold text-slate-800 relative z-10 tracking-tight" id="mine-name">加载中...</h2>
+                <p class="text-xs font-bold text-slate-400 mt-1.5 relative z-10 bg-slate-100 px-3 py-1 rounded-md" id="mine-id">ID: ...</p>
+                <p class="text-[10px] font-black text-slate-300 mt-2 relative z-10 uppercase tracking-widest" id="mine-version">v1</p>
+                <div class="w-full bg-slate-50/80 rounded-2xl p-5 mt-8 text-center relative z-10 border border-slate-100">
+                    <p class="text-sm font-medium text-slate-600 leading-relaxed" id="mine-bio">这个人很懒...</p>
+                </div>
+            </div>
+            
+            <div class="space-y-3 mt-8">
+                <div onclick="document.getElementById('guide-modal').classList.remove('hidden')" class="glass-card p-5 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-colors group">
+                    <span class="text-sm font-bold text-slate-700 group-hover:text-blue-600 transition-colors">使用说明</span>
+                    <span class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1.5 rounded-lg group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">查看</span>
+                </div>
+                <div onclick="document.getElementById('pwd-modal').classList.remove('hidden')" class="glass-card p-5 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-colors group">
+                    <span class="text-sm font-bold text-slate-700 group-hover:text-orange-600 transition-colors">修改密码</span>
+                    <span class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1.5 rounded-lg group-hover:bg-orange-50 group-hover:text-orange-500 transition-colors">安全</span>
+                </div>
+                <div id="install-app-btn" onclick="installPWA()" class="glass-card p-5 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-colors group">
+                    <div class="flex flex-col">
+                        <span class="text-sm font-bold text-slate-700 group-hover:text-emerald-600 transition-colors">把网址添加成 APP</span>
+                        <span class="text-[11px] font-medium text-slate-400 mt-1">免安装，直接在当前浏览器生成</span>
+                    </div>
+                    <span class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1.5 rounded-lg group-hover:bg-emerald-50 group-hover:text-emerald-500 transition-colors">一键添加</span>
+                </div>
+                <a href="https://wqymmnrfvdhygfctcirj.supabase.co/storage/v1/object/public/downloads/stzq_9.9.9.apk" target="_blank" class="glass-card p-5 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-colors group">
+                    <div class="flex flex-col">
+                        <span class="text-sm font-bold text-slate-700 group-hover:text-blue-600 transition-colors">直接下载 APP 安装包</span>
+                        <span class="text-[11px] font-medium text-slate-400 mt-1">安卓安装包，下载即装</span>
+                    </div>
+                    <span class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1.5 rounded-lg group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">立即下载</span>
+                </a>
+                <div onclick="copyEmail()" class="glass-card p-5 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-colors group">
+                    <span class="text-sm font-bold text-slate-700 group-hover:text-blue-600 transition-colors">联系我们</span>
+                    <span class="text-xs font-medium text-slate-400">2292880441@qq.com</span>
+                </div>
+                <div onclick="handleLogout()" class="glass-card p-5 flex justify-center items-center cursor-pointer hover:bg-red-50/80 transition-colors mt-8 border-red-100">
+                    <span class="text-sm font-bold text-red-500">安全退出</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="user-profile-modal" class="fixed inset-0 bg-[#f4f6f8] z-[999] flex flex-col hidden">
+        <header class="px-4 py-3 bg-white/90 backdrop-blur sticky top-0 z-10 flex justify-between items-center border-b border-slate-200">
+            <div class="flex items-center gap-3">
+                <button onclick="document.getElementById('user-profile-modal').classList.add('hidden')" class="text-slate-500 p-1">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <span class="font-bold text-slate-800 text-lg">个人主页</span>
+            </div>
+        </header>
+        <div class="flex-1 overflow-y-auto p-5">
+            <div class="glass-card p-10 flex flex-col items-center mt-6 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-br from-emerald-400 to-teal-500 opacity-15"></div>
+                <div class="w-28 h-28 rounded-full bg-slate-100 overflow-hidden ring-[6px] ring-white shadow-xl mb-5 relative z-10">
+                    <img id="up-avatar" src="" class="w-full h-full object-cover">
+                </div>
+                <h2 class="text-2xl font-extrabold text-slate-800 relative z-10 tracking-tight" id="up-name">加载中...</h2>
+                <p class="text-xs font-bold text-slate-400 mt-1.5 relative z-10 bg-slate-100 px-3 py-1 rounded-md" id="up-id">ID: ...</p>
+                <div class="w-full bg-slate-50/80 rounded-2xl p-5 mt-8 text-center relative z-10 border border-slate-100">
+                    <p class="text-sm font-medium text-slate-600 leading-relaxed" id="up-bio">这个人很懒...</p>
+                </div>
+            </div>
+            <div class="mt-8 space-y-3">
+                <button id="up-chat-btn" onclick="startChatFromProfile()" class="w-full btn-primary text-white font-bold py-3.5 rounded-xl shadow-lg transition-all hidden">发消息</button>
+                <button id="up-add-btn" onclick="addFriendFromProfile()" class="w-full bg-white border border-slate-200 text-slate-700 font-bold py-3.5 rounded-xl hover:bg-slate-50 transition-all shadow-sm hidden">添加好友</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="private-chat-modal" class="fixed inset-0 bg-[#f4f6f8] z-[999] flex flex-col hidden">
+        <header class="px-4 py-3 bg-white/90 backdrop-blur flex justify-between items-center border-b border-slate-200">
+            <div class="flex items-center gap-3">
+                <button onclick="closePrivateChat()" class="text-slate-500 p-1">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <img id="pc-avatar" src="" class="w-8 h-8 rounded-full border border-slate-200">
+                <span class="font-bold text-slate-800" id="pc-name">玩家名字</span>
+            </div>
+        </header>
+        <div id="pc-messages" class="flex-1 overflow-y-auto p-5 space-y-4 pb-20"></div>
+        <div class="p-4 bg-white border-t border-slate-200 pb-safe">
+            <div class="flex items-center bg-slate-100 rounded-xl p-1 pl-4">
+                <input type="text" id="pc-input" class="flex-1 bg-transparent outline-none py-2 text-sm text-slate-700 placeholder-slate-400" placeholder="发消息..." onkeydown="if(event.key==='Enter'){sendPrivateMsg()}">
+                <button onclick="sendPrivateMsg()" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-bold">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="fixed bottom-5 left-5 right-5 max-w-md mx-auto h-[64px] nav-pill rounded-[24px] flex justify-around items-center z-50 px-2">
+        <button onclick="switchTab('home')" id="nav-home" class="nav-btn text-emerald-600 flex flex-col items-center justify-center w-1/5 h-full transition-all gap-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            <span class="text-[10px] font-bold">举报</span>
+        </button>
+        <button onclick="switchTab('ai')" id="nav-ai" class="nav-btn text-slate-400 hover:text-slate-600 flex flex-col items-center justify-center w-1/5 h-full transition-all gap-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            <span class="text-[10px] font-bold">AI</span>
+        </button>
+        <button onclick="switchTab('battle')" id="nav-battle" class="nav-btn text-slate-400 hover:text-slate-600 flex flex-col items-center justify-center w-1/5 h-full transition-all gap-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span class="text-[10px] font-bold">考勤</span>
+        </button>
+        <button onclick="switchTab('forum')" id="nav-forum" class="nav-btn text-slate-400 hover:text-slate-600 flex flex-col items-center justify-center w-1/5 h-full transition-all gap-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg>
+            <span class="text-[10px] font-bold">论坛</span>
+        </button>
+        <button onclick="switchTab('mine')" id="nav-mine" class="nav-btn text-slate-400 hover:text-slate-600 flex flex-col items-center justify-center w-1/5 h-full transition-all gap-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            <span class="text-[10px] font-bold">我的</span>
+        </button>
+    </nav>
+
+    <script>
+        const APP_VERSION = 3; 
+        const SUPABASE_URL = "https://wqymmnrfvdhygfctcirj.supabase.co"; 
+        const SUPABASE_ANON_KEY = "sb_publishable_GP5vnnTzRlsLs6htIuBriw_ZpW2cvrT";
+        
+        const BASE_HEADERS = { 
+            'apikey': SUPABASE_ANON_KEY, 
+            'Content-Type': 'application/json',
+            'x-client-version': APP_VERSION.toString()
+        };
+
+        let globalExportData = [];
+        let currentChatFriend = null;
+        let chatPollingInterval = null;
+        let currentUserAvatarCache = "";
+        let profileTargetId = null;
+
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
+        }
+
+        function formatChatTime(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            const now = new Date();
+            
+            const bjDate = new Date(date.getTime() + 8 * 3600 * 1000);
+            const bjNow = new Date(now.getTime() + 8 * 3600 * 1000);
+
+            const d1 = bjDate.getUTCDate();
+            const m1 = bjDate.getUTCMonth() + 1;
+            const y1 = bjDate.getUTCFullYear();
+            const hh = bjDate.getUTCHours().toString().padStart(2, '0');
+            const mm = bjDate.getUTCMinutes().toString().padStart(2, '0');
+
+            const d2 = bjNow.getUTCDate();
+            const m2 = bjNow.getUTCMonth() + 1;
+            const y2 = bjNow.getUTCFullYear();
+
+            if (y1 !== y2) return `${y1}年${m1}月${d1}日 ${hh}:${mm}`;
+            if (m1 !== m2) return `${m1}月${d1}日 ${hh}:${mm}`;
+            if (d1 !== d2) {
+                const diff = d2 - d1;
+                if (diff === 1) return `昨天 ${hh}:${mm}`;
+                return `${m1}月${d1}日 ${hh}:${mm}`;
+            }
+            return `今天 ${hh}:${mm}`;
+        }
+
+        function checkRedirect(latestUrl) {
+            if (latestUrl && latestUrl.trim() !== "") {
+                const currentUrl = window.location.href.replace(/\/$/, "");
+                const targetUrl = latestUrl.trim().replace(/\/$/, "");
+                if (!currentUrl.startsWith(targetUrl)) {
+                    showToast("检测到新版本地址，正在跳转...");
+                    setTimeout(() => { window.location.href = latestUrl.trim(); }, 1500);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function checkAppStatus(data) {
+            if (data.maintenance_enabled) {
+                document.getElementById('maintenance-text').innerText = data.maintenance_content || "系统正在维护中...";
+                document.getElementById('maintenance-modal').classList.remove('hidden');
+                return true;
+            }
+            if (data.notice_enabled && data.notice_content) {
+                const lastNotice = localStorage.getItem('last_notice');
+                if (lastNotice !== data.notice_content) {
+                    document.getElementById('notice-text').innerText = data.notice_content;
+                    document.getElementById('notice-modal').classList.remove('hidden');
+                    localStorage.setItem('last_notice', data.notice_content);
+                }
+            }
+            return false;
+        }
+
+        function closeNotice() {
+            document.getElementById('notice-modal').classList.add('hidden');
+        }
+
+        function getAuthToken() { return localStorage.getItem('app_token'); }
+
+        function getAuthHeaders() {
+            const token = getAuthToken();
+            return { ...BASE_HEADERS, 'Authorization': token ? `Bearer ${token}` : `Bearer ${SUPABASE_ANON_KEY}` };
+        }
+
+        let currentUserId = localStorage.getItem('app_user_id');
+        let currentGameName = localStorage.getItem('app_game_name');
+        let currentBio = "这个人很懒...";
+        let currentAvatar = "";
+        
+        let chatHistory = [];
+        let deferredPrompt;
+        let selectedPresetAvatar = "";
+
+        const PRESET_AVATARS = [
+            "https://api.dicebear.com/7.x/initials/svg?seed=ZQ&backgroundColor=10b981&textColor=ffffff",
+            "https://api.dicebear.com/7.x/initials/svg?seed=CG&backgroundColor=0ea5e9&textColor=ffffff",
+            "https://api.dicebear.com/7.x/initials/svg?seed=HY&backgroundColor=8b5cf6&textColor=ffffff",
+            "https://api.dicebear.com/7.x/initials/svg?seed=LT&backgroundColor=f59e0b&textColor=ffffff",
+            "https://api.dicebear.com/7.x/initials/svg?seed=XS&backgroundColor=ef4444&textColor=ffffff",
+            "https://api.dicebear.com/7.x/initials/svg?seed=MG&backgroundColor=334155&textColor=ffffff"
+        ];
+
+        function showToast(msg) { 
+            const t = document.getElementById('toast'); 
+            t.innerHTML = msg; 
+            t.className = "show"; 
+            setTimeout(() => t.className = t.className.replace("show", ""), 3000); 
+        }
+
+        function checkVersion(dbVersion) {
+            if (dbVersion && dbVersion > APP_VERSION) {
+                document.body.innerHTML = `
+                    <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f4f6f8; padding: 20px; text-align: center; font-family: sans-serif;">
+                        <div style="font-size: 60px; margin-bottom: 20px;">🚀</div>
+                        <h1 style="font-size: 24px; font-weight: 900; color: #0f172a; margin-bottom: 10px; tracking-tight">发现新版本</h1>
+                        <p style="color: #64748b; margin-bottom: 30px; max-width: 300px; line-height: 1.6;">为了提供更稳定的服务，当前版本已停用。</p>
+                        <button onclick="window.location.reload(true)" style="background: #0f172a; color: white; padding: 14px 40px; border-radius: 12px; border: none; font-weight: bold; font-size: 16px; cursor: pointer; transition: all 0.2s;">立即刷新</button>
+                    </div>
+                `;
+                return true;
+            }
+            return false;
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
+
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') { showToast('安装成功！'); }
+                    deferredPrompt = null;
+                });
+            } else {
+                showToast("请点击浏览器右上角菜单，选择“添加到主屏幕”");
+            }
+        }
+
+        function compressImage(file, maxWidth, quality) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        if (width > maxWidth) { height = Math.round((height * maxWidth) / width); width = maxWidth; }
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        canvas.toBlob((blob) => {
+                            const base64 = canvas.toDataURL('image/jpeg', quality);
+                            resolve({ blob: blob, base64: base64 });
+                        }, 'image/jpeg', quality);
+                    };
+                };
+            });
+        }
+
+        function switchTab(tabId) {
+            if (tabId !== 'home' && !getAuthToken()) return showToast("请先登录后再使用该功能");
+            
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
+            document.querySelectorAll('.nav-btn').forEach(b => {
+                b.classList.remove('text-emerald-600');
+                b.classList.add('text-slate-400');
+            });
+            
+            document.getElementById(`page-${tabId}`).classList.add('active'); 
+            
+            const targetBtn = document.getElementById(`nav-${tabId}`);
+            targetBtn.classList.remove('text-slate-400');
+            targetBtn.classList.add('text-emerald-600');
+            
+            if (tabId === 'forum') {
+                switchForumTab('public');
+            }
+            if (tabId === 'ai') { const cb = document.getElementById('chat-box'); cb.scrollTop = cb.scrollHeight; }
+        }
+
+        function switchForumTab(subTab) {
+            if (subTab === 'public') {
+                document.getElementById('tab-public').className = 'flex-1 text-sm font-bold py-2 rounded-lg bg-white shadow-sm text-slate-800 transition-all';
+                document.getElementById('tab-private').className = 'flex-1 text-sm font-bold py-2 rounded-lg text-slate-500 hover:text-slate-700 transition-all';
+                document.getElementById('forum-public-area').classList.remove('hidden');
+                document.getElementById('forum-private-area').classList.add('hidden');
+                fetchForumPosts();
+            } else {
+                document.getElementById('tab-private').className = 'flex-1 text-sm font-bold py-2 rounded-lg bg-white shadow-sm text-slate-800 transition-all';
+                document.getElementById('tab-public').className = 'flex-1 text-sm font-bold py-2 rounded-lg text-slate-500 hover:text-slate-700 transition-all';
+                document.getElementById('forum-private-area').classList.remove('hidden');
+                document.getElementById('forum-public-area').classList.add('hidden');
+                fetchFriends();
+                fetchFriendRequests();
+            }
+        }
+
+        async function openUserProfile(element) {
+            const targetId = element.getAttribute('data-uid');
+            if (!targetId) return;
+            if (targetId == currentUserId) {
+                return switchTab('mine');
+            }
+            profileTargetId = targetId;
+            
+            document.getElementById('up-avatar').src = PRESET_AVATARS[0];
+            document.getElementById('up-name').innerText = '加载中...';
+            document.getElementById('up-bio').innerText = '...';
+            document.getElementById('up-id').innerText = 'ID: ...';
+            document.getElementById('up-chat-btn').classList.add('hidden');
+            document.getElementById('up-add-btn').classList.add('hidden');
+
+            document.getElementById('user-profile-modal').classList.remove('hidden');
+
+            try {
+                const res = await fetch(`${SUPABASE_URL}/functions/v1/clever-handler`, {
+                    method: 'POST', headers: getAuthHeaders(),
+                    body: JSON.stringify({ action: 'get_user_profile', target_id: targetId })
+                });
+                const data = await res.json();
+                if(!res.ok) throw new Error(data.error);
+                
+                document.getElementById('up-avatar').src = escapeHTML(data.profile.avatar) || PRESET_AVATARS[0];
+                document.getElementById('up-name').innerText = escapeHTML(data.profile.game_name);
+                document.getElementById('up-id').innerText = `ID: ${data.profile.id}`;
+                document.getElementById('up-bio').innerText = escapeHTML(data.profile.bio) || '这个人很懒...';
+                
+                if (data.isFriend) {
+                    document.getElementById('up-chat-btn').classList.remove('hidden');
+                } else {
+                    document.getElementById('up-add-btn').classList.remove('hidden');
+                }
+            } catch(e) {
+                showToast(e.message);
+                document.getElementById('user-profile-modal').classList.add('hidden');
+            }
+        }
+
+        function startChatFromProfile() {
+            if (!profileTargetId) return;
+            document.getElementById('user-profile-modal').classList.add('hidden');
+            const name = document.getElementById('up-name').innerText;
+            const avatar = document.getElementById('up-avatar').src;
+            const mockElement = document.createElement('div');
+            mockElement.setAttribute('data-fid', profileTargetId);
+            mockElement.setAttribute('data-fname', name);
+            mockElement.setAttribute('data-favatar', avatar);
+            openPrivateChat(mockElement);
+        }
+
+        async function addFriendFromProfile() {
+            if (!profileTargetId) return;
+            const btn = document.getElementById('up-add-btn');
+            btn.innerText = '发送中...';
+            btn.disabled = true;
+            try {
+                const res = await fetch(`${SUPABASE_URL}/functions/v1/clever-handler`, {
+                    method: 'POST', headers: getAuthHeaders(),
+                    body: JSON.stringify({ action: 'send_friend_request', target_id: profileTargetId })
+                });
+                const data = await res.json();
+                if(!res.ok) throw new Error(data.error);
+                showToast('申请已发送');
+                btn.innerText = '已发送';
+                btn.className = 'w-full bg-slate-100 text-slate-400 font-bold py-3.5 rounded-xl border border-slate-200';
+            } catch(e) {
+                showToast(e.message);
+                btn.innerText = '添加好友';
+                btn.disabled = false;
+            }
+        }
+
+        async function searchUser() {
+            const q = document.getElementById('search-friend-id').value.trim();
+            if (!q) return;
+            const resArea = document.getElementById('search-result-area');
+            resArea.classList.remove('hidden');
+            resArea.innerHTML = '<div class="text-center text-slate-400 text-sm py-2">搜索中...</div>';
+            try {
+                const res = await fetch(`${SUPABASE_URL}/functions/v1/clever-handler`, {
+                    method: 'POST', headers: getAuthHeaders(),
+                    body: JSON.stringify({ action: 'search_user', query: q })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                if (data.success && data.users.length > 0) {
+                    resArea.innerHTML = data.users.map(u => `
+                        <div class="glass-card p-4 flex items-center justify-between">
+                            <div class="flex items-center gap-3" data-uid="${u.id}" onclick="openUserProfile(this)">
+                                <img src="${escapeHTML(u.avatar) || PRESET_AVATARS[0]}" class="w-10 h-10 rounded-full object-cover border border-slate-200 cursor-pointer hover:opacity-80">
+                                <div class="cursor-pointer">
+                                    <h4 class="text-sm font-bold text-slate-800">${escapeHTML(u.game_name)}</h4>
+                                    <p class="text-[10px] text-slate-400">ID: ${u.id}</p>
+                                </div>
+                            </div>
+                            <button data-target-id="${u.id}" onclick="sendFriendRequest(this)" class="bg-emerald-100 text-emerald-700 text-xs font-bold px-4 py-2 rounded-lg hover:bg-emerald-200 transition-colors">添加</button>
+                        </div>
+                    `).join('');
+                } else {
+                    resArea.innerHTML = '<div class="text-center text-slate-400 text-sm py-4">未找到该玩家，请检查 ID 或昵称</div>';
+                }
+            } catch(e) { resArea.innerHTML = `<div class="text-center text-red-400 text-sm py-4">${e.message}</div>`; }
+        }
+
+        async function sendFriendRequest(btn) {
+            const targetId = btn.getAttribute('data-target-id');
+            btn.innerText = '发送中';
+            btn.disabled = true;
+            try {
+                const res = await fetch(`${SUPABASE_URL}/functions/v1/clever-handler`, {
+                    method: 'POST', headers: getAuthHeaders(),
+                    body: JSON.stringify({ action: 'send_friend_request', target_id: targetId })
+                });
+                const data = await res.json();
+                if(!res.ok) throw new Error(data.error);
+                btn.innerText = '已发送';
+                btn.className = 'bg-slate-100 text-slate-400 text-xs font-bold px-4 py-2 rounded-lg';
+                showToast('申请已发送，等待对方同意');
+            } catch(e) {
+                btn.innerText = '添加';
+                btn.disabled = false;
+                showToast(e.message);
+            }
+        }
+
+        async function fetchFriendRequests() {
+            try {
+                const res = await fetch(`${SUPABASE_URL}/functions/v1/clever-handler`, {
+                    method: 'POST', headers: getAuthHeaders(),
+                    body: JSON.stringify({ action: 'get_friend_requests' })
+                });
+                const data = await res.json();
+                const area = document.getElementById('friend-requests-area');
+                const list = document.getElementById('friend-requests-list');
+                
+                if(data.success && data.requests.length > 0) {
+                    area.classList.remove('hidden');
+                    list.innerHTML = data.requests.map(r => `
+                        <div class="glass-card p-4 flex items-center justify-between border-l-4 border-emerald-400">
+                            <div class="flex items-center gap-3" data-uid="${r.sender_id}" onclick="openUserProfile(this)">
+                                <img src="${escapeHTML(r.avatar) || PRESET_AVATARS[0]}" class="w-10 h-10 rounded-full object-cover border border-slate-200 cursor-pointer hover:opacity-80">
+                                <h4 class="text-sm font-bold text-slate-800 cursor-pointer">${escapeHTML(r.game_name)}</h4>
+                            </div>
+                            <div class="flex gap-2">
+                                <button data-req-id="${r.req_id}" data-sender-id="${r.sender_id}" data-action="rejected" onclick="handleRequest(this)" class="bg-slate-100 text-slate-500 text-xs font-bold px-3 py-2 rounded-lg">拒绝</button>
+                                <button data-req-id="${r.req_id}" data-sender-id="${r.sender_id}" data-action="accepted" onclick="handleRequest(this)" class="btn-primary text-white text-xs font-bold px-3 py-2 rounded-lg">同意</button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    area.classList.add('hidden');
+                }
+            } catch(e) {}
+        }
+
+        async function handleRequest(btn) {
+            const reqId = btn.getAttribute('data-req-id');
+            const senderId = btn.getAttribute('data-sender-id');
+            const type = btn.getAttribute('data-action');
+            btn.innerText = '处理中';
+            btn.disabled = true;
+            try {
+                await fetch(`${SUPABASE_URL}/functions/v1/clever-handler`, {
+                    method: 'POST', headers: getAuthHeaders(),
+                    body: JSON.stringify({ action: 'handle_friend_request', req_id: reqId, sender_id: senderId, action_type: type })
+                });
+                fetchFriendRequests();
+                fetchFriends();
+            } catch(e) {}
+        }
+
+        async function fetchFriends() {
+            const list = document.getElementById('friend-list');
+            try {
+                const res = await fetch(`${SUPABASE_URL}/functions/v1/clever-handler`, {
+                    method: 'POST', headers: getAuthHeaders(),
+                    body: JSON.stringify({ action: 'get_friends' })
+                });
+                const data = await res.json();
+                if(data.success && data.friends.length > 0) {
+                    list.innerHTML = data.friends.map(f => `
+                        <div data-fid="${f.id}" data-fname="${escapeHTML(f.game_name)}" data-favatar="${escapeHTML(f.avatar) || ''}" onclick="openPrivateChat(this)" class="glass-card p-4 flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition-colors">
+                            <img src="${escapeHTML(f.avatar) || PRESET_AVATARS[0]}" data-uid="${f.id}" onclick="event.stopPropagation(); openUserProfile(this)" class="w-12 h-12 rounded-full object-cover bg-slate-100 border border-slate-200 cursor-pointer hover:opacity-80">
+                            <div class="flex-1">
+                                <h4 class="text-sm font-bold text-slate-800">${escapeHTML(f.game_name)}</h4>
+                                <p class="text-xs text-slate-400 mt-0.5">点击进入私聊</p>
+                            </div>
+                            <svg class="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </div>
+                    `).join('');
+                } else {
+                    list.innerHTML = '<div class="text-center text-slate-400 text-sm py-4 font-medium">暂无好友，请通过上方搜索添加</div>';
+                }
+            } catch(e) {}
+        }
+
+        async function openPrivateChat(element) {
+            const friendId = element.getAttribute('data-fid');
+            const name = element.getAttribute('data-fname');
+            const avatar = element.getAttribute('data-favatar');
+            
+            currentChatFriend = friendId;
+            document.getElementById('pc-name').innerText = name;
+            document.getElementById('pc-avatar').src = avatar || PRESET_AVATARS[0];
+            document.getElementById('private-chat-modal').classList.remove('hidden');
+            document.getElementById('pc-input').value = '';
+            await loadPrivateMsgs();
+            if (chatPollingInterval) clearInterval(chatPollingInterval);
+            chatPollingInterval = setInterval(loadPrivateMsgs, 3000);
+        }
+
+        function closePrivateChat() {
+            document.getElementById('private-chat-modal').classList.add('hidden');
+            currentChatFriend = null;
+            if (chatPollingInterval) clearInterval(chatPollingInterval);
+        }
+
+        async function loadPrivateMsgs() {
+            if (!currentChatFriend) return;
+            try {
+                const res = await fetch(`${SUPABASE_URL}/functions/v1/clever-handler`, {
+                    method: 'POST', headers: getAuthHeaders(),
+                    body: JSON.stringify({ action: 'get_private_messages', friend_id: currentChatFriend })
+                });
+                const data = await res.json();
+                if(!res.ok) throw new Error(data.error);
+                const box = document.getElementById('pc-messages');
+                if(data.success && data.messages.length > 0) {
+                    box.innerHTML = data.messages.map(m => {
+                        const isMe = m.sender_id == currentUserId;
+                        const time = formatChatTime(m.created_at);
+                        if(isMe) {
+                            return `<div class="flex flex-col items-end mb-4">
+                                <div class="text-[10px] text-slate-400 mb-1">${time}</div>
+                                <div class="bubble-user p-3 text-sm max-w-[80%]">${escapeHTML(m.content)}</div>
+                            </div>`;
+                        } else {
+                            return `<div class="flex flex-col items-start mb-4">
+                                <div class="text-[10px] text-slate-400 mb-1">${time}</div>
+                                <div class="bubble-other p-3 text-sm max-w-[80%]">${escapeHTML(m.content)}</div>
+                            </div>`;
+                        }
+                    }).join('');
+                    box.scrollTop = box.scrollHeight;
+                } else {
+                    box.innerHTML = '';
+                }
+            } catch(e) {
+                closePrivateChat();
+                showToast(e.message);
+            }
+        }
+
+        async function sendPrivateMsg() {
+            const input = document.getElementById('pc-input');
+            const text = input.value.trim();
+            if(!text || !currentChatFriend) return;
+            input.value = '';
+            try {
+                const res = await fetch(`${SUPABASE_URL}/functions/v1/clever-handler`, {
+                    method: 'POST', headers: getAuthHeaders(),
+                    body: JSON.stringify({ action: 'send_private_message', friend_id: currentChatFriend, content: text })
+                });
+                if(!res.ok) {
+                    const d = await res.json();
+                    throw new Error(d.error);
+                }
+                loadPrivateMsgs();
+            } catch(e) { showToast(e.message); }
+        }
+
+        function openProfileEdit() {
+            if (!getAuthToken()) return showToast("请先登录");
+            document.getElementById('edit-bio').value = currentBio;
+            document.getElementById('edit-avatar-file').value = "";
+            selectedPresetAvatar = "";
+
+            const container = document.getElementById('preset-avatars');
+            container.innerHTML = PRESET_AVATARS.map(url => `
+                <img src="${url}" onclick="selectPresetAvatar('${url}', this)" 
+                     class="w-14 h-14 rounded-full cursor-pointer object-cover border-[3px] border-transparent transition-all flex-shrink-0 shadow-sm hover:scale-105">
+            `).join('');
+
+            document.getElementById('edit-profile-modal').classList.remove('hidden');
+        }
+
+        function selectPresetAvatar(url, element) {
+            selectedPresetAvatar = url;
+            document.getElementById('edit-avatar-file').value = ""; 
+            document.querySelectorAll('#preset-avatars img').forEach(img => {
+                img.classList.remove('border-emerald-500', 'scale-110');
+                img.classList.add('border-transparent');
+            });
+            element.classList.remove('border-transparent');
+            element.classList.add('border-emerald-500', 'scale-110');
+        }
+
+        async function saveProfile() {
+            if (!getAuthToken()) return;
+            const bio = document.getElementById('edit-bio').value.trim();
+            const fileInput = document.getElementById('edit-avatar-file');
+            const btn = document.getElementById('btn-save-profile'); btn.innerText = "保存中...";
+            let avatarUrl = currentAvatar;
+
+            if (fileInput.files && fileInput.files[0]) {
+                const res = await compressImage(fileInput.files[0], 200, 0.8);
+                const fileName = `avatar_${currentUserId}_${Date.now()}.jpg`;
+                const { error } = await window.supabase.storage.from('images').upload(fileName, res.blob);
+                if (error) {
+                    btn.innerText = "保存";
+                    return showToast("图片上传失败");
+                }
+                avatarUrl = window.supabase.storage.from('images').getPublicUrl(fileName).data.publicUrl;
+            } else if (selectedPresetAvatar) {
+                avatarUrl = selectedPresetAvatar;
+            }
+
+            const res = await fetch(`${SUPABASE_URL}/functions/v1/clever-handler`, {
+                method: 'POST', headers: getAuthHeaders(),
+                body: JSON.stringify({ action: 'update_profile', bio: bio, avatar: avatarUrl })
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                btn.innerText = "保存";
+                return showToast(data.error || "保存失败");
+            }
+            
+            currentBio = bio; currentAvatar = avatarUrl;
+            updateMineTab(); document.getElementById('edit-profile-modal').classList.add('hidden');
+            btn.innerText = "保存"; showToast("保存成功");
+        }
+
+        async function changePassword() {
+            const oldPwd = document.getElementById('old-pwd').value;
+            const newPwd = document.getElementById('new-pwd').value;
+            if (!oldPwd || !newPwd) return showToast("请填写完整");
+            if (newPwd.length < 6) return showToast("新密码至少6位");
+            
+            const btn = document.getElementById('btn-change-pwd'); btn.innerText = "提交中...";
+            try {
+                const res = await fetch(`${SUPABASE_URL}/functions/v1/clever-handler`, {
+                    method: 'POST', headers: getAuthHeaders(),
+                    body: JSON.stringify({ action: 'change_password', old_password: oldPwd, new_password: newPwd })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                
+                showToast("密码修改成功，请重新登录");
+                setTimeout(() => { handleLogout(); }, 1500);
+            } catch (e) {
+                showToast(e.message);
+            } finally {
+                btn.innerText = "确认修改";
+            }
+        }
+
+        async function handleAuth(action) {
+            const email = document.getElementById('auth-email').value.trim();
+            const password = document.getElementById('auth-password').value.trim();
+            const game_name = document.getElementById('auth-gamename').value.trim();
+            if(action === 'signup' && !game_name) return showToast("请输入游戏昵称");
+            if(password.length < 6) return showToast("密码至少6位");
+            
+            try {
+                const res = await fetch(`${SUPABASE_URL}/functions/v1/clever-handler`, {
+                    method: 'POST', headers: BASE_HEADERS,
+                    body: JSON.stringify({ action, email, password, game_name })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                
+                if (checkVersion(data.current_version)) return;
+                if (checkRedirect(data.latest_url)) return;
+                if (checkAppStatus(data)) return;
+                
+                showToast(action === 'signup' ? "注册成功，已自动登录" : "登录成功");
+                localStorage.setItem('app_token', data.token); 
+                localStorage.setItem('app_user_id', data.user_id); 
+                localStorage.setItem('app_game_name', data.game_name);
+                
+                currentUserId = data.user_id; currentGameName = data.game_name; currentBio = data.bio || "这个人很懒..."; currentAvatar = data.avatar || "";
+                document.getElementById('auth-modal').classList.add('hidden');
+                document.getElementById('reporter').value = currentGameName;
+                updateMineTab();
+            } catch (e) { showToast(e.message); }
+        }
+
+        function updateMineTab() {
+            const imgEl = document.getElementById('mine-avatar-img');
+            imgEl.src = currentAvatar ? `${currentAvatar}?t=${Date.now()}` : PRESET_AVATARS[0];
+            document.getElementById('mine-name').innerText = currentGameName || "未登录";
+            document.getElementById('mine-id').innerText = "ID: " + (currentUserId || "...");
+            document.getElementById('mine-bio').innerText = currentBio;
+            document.getElementById('mine-version').innerText = "v" + APP_VERSION;
+        }
+
+        async function sendMessage() {
+            if (!getAuthToken()) return showToast("请先登录再使用AI");
+            const input = document.getElementById('ai-input'); const text = input.value.trim();
+            if (!text) return;
+            
+            const chatBox = document.getElementById('chat-box');
+            const userBubble = document.createElement('div');
+            userBubble.className = 'flex justify-end gap-3 mb-6';
+            const userInner = document.createElement('div');
+            userInner.className = 'bubble-user p-4 max-w-[85%] text-sm leading-relaxed';
+            userInner.textContent = text;
+            userBubble.appendChild(userInner);
+            chatBox.appendChild(userBubble);
+            
+            input.value = '';
+            
+            chatHistory.push({ role: "user", content: text });
+            if (chatHistory.length > 20) chatHistory = chatHistory.slice(chatHistory.length - 20);
+
+            const sysPrompt = `你是“海之蓝 AI”。
+【核心规则】
+1. 你的名字叫“海之蓝 AI”，请用简短、专业的自然语言回答用户的问题。
+2. 【极其重要】：只有在用户明确要求“举报某人/某事”时，你才可以使用 JSON 格式：{"action": "report", "reporter": "xxx", "reported": "xxx", "reason": "xxx"}。
+3. 如果是普通聊天或提问（比如问性能、问攻略），绝对、绝对不准输出任何 JSON 格式！也不准把上面的模板打印出来！`;
+            
+            const enableSearch = document.getElementById('toggle-search').checked;
+            const thinking = document.getElementById('toggle-thinking').checked;
+
+            const payload = {
+                action: 'chat', 
+                provider: 'auto',
+                thinking: thinking,
+                enableSearch: enableSearch,
+                messages: [{ role: "system", content: sysPrompt }, ...chatHistory]
+            };
+            
+            chatBox.innerHTML += `<div id="loading-ai" class="flex gap-3 mb-6"><div class="bubble-ai p-4 text-slate-400 text-sm"><span class="dot">●</span><span class="dot">●</span><span class="dot">●</span></div></div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const res = await fetch(`${SUPABASE_URL}/functions/v1/clever-handler`, {
+                    method: 'POST', headers: getAuthHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    document.getElementById('loading-ai')?.remove();
+                    chatHistory.pop(); 
+                    return showToast(errorData.error || "AI请求失败");
+                }
+
+                document.getElementById('loading-ai').remove();
+                let aiDiv = document.createElement('div'); aiDiv.className = 'flex gap-3 mb-6'; aiDiv.innerHTML = `<div class="w-9 h-9 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-md">AI</div><div class="bubble-ai p-4 max-w-[85%] text-sm leading-relaxed"></div>`;
+                chatBox.appendChild(aiDiv); let contentDiv = aiDiv.querySelector('.bubble-ai');
+                
+                const reader = res.body.getReader(); const decoder = new TextDecoder(); let fullText = "";
+                
+                while (true) {
+                    const { done, value } = await reader.read(); if (done) break;
+                    const chunk = decoder.decode(value); const lines = chunk.split('\n');
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const d = line.replace('data: ', '').trim(); if (d === '[DONE]') continue;
+                            try {
+                                const j = JSON.parse(d);
+                                if (j.choices && j.choices[0].delta.content) { 
+                                    const delta = j.choices[0].delta.content;
+                                    fullText += delta; 
+                                    if (fullText.trim() === "") continue;
+                                    contentDiv.textContent = fullText;
+                                    chatBox.scrollTop = chatBox.scrollHeight; 
+                                }
+                            } catch(e) {}
+                        }
+                    }
+                }
+                chatHistory.push({ role: "assistant", content: fullText });
+            } catch(e) { 
+                document.getElementById('loading-ai')?.remove(); 
+                chatHistory.pop(); 
+                showToast("请求失败"); 
+            }
+        }
+
+        async function submitPost() {
+            if (!getAuthToken()) return showToast("请先登录");
+            const input = document.getElementById('forum-input'); const content = input.value.trim();
+            if (!content) return;
+            const btn = document.getElementById('post-btn'); btn.innerText = "发送中";
+            
+            const res = await fetch(`${SUPABASE_URL}/functions/v1/clever-handler`, {
+                method: 'POST', 
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ action: 'submit_post', content: content })
+            });
+            
+            const data = await res.json();
+            btn.innerText = "发送";
+            
+            if (!res.ok) return showToast(data.error || "发送失败");
+            
+            input.value = '';
+            fetchForumPosts();
+        }
+
+        async function fetchForumPosts() {
+            const list = document.getElementById('forum-list');
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/forum_posts?select=*&order=created_at.asc&limit=50`, { headers: BASE_HEADERS });
+            const data = await res.json();
+            if (data.length === 0) { list.innerHTML = '<div class="text-center text-slate-400 text-sm py-4 font-medium">暂无帖子</div>'; return; }
+            
+            if (!currentAvatar) currentUserAvatarCache = PRESET_AVATARS[0];
+            else currentUserAvatarCache = currentAvatar;
+
+            let lastTimeStr = "";
+            list.innerHTML = data.map(post => {
+                const isMe = post.user_id == currentUserId;
+                const formattedTime = formatChatTime(post.created_at);
+                let timeHtml = "";
+                
+                if (formattedTime.split(' ')[0] !== lastTimeStr) {
+                    timeHtml = `<div class="time-divider">${formattedTime}</div>`;
+                    lastTimeStr = formattedTime.split(' ')[0];
+                }
+
+                const userAvatar = isMe ? currentUserAvatarCache : `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(post.game_name || '')}&backgroundColor=94a3b8&textColor=ffffff`;
+
+                let bubbleHtml = "";
+                if (isMe) {
+                    bubbleHtml = `
+                    <div class="flex justify-end gap-3 mb-4">
+                        <div class="flex flex-col items-end">
+                            <div class="text-[10px] font-bold text-slate-400 mb-1 mr-1">我 · ${formattedTime.split(' ')[1]}</div>
+                            <div class="bubble-user p-3.5 text-sm leading-relaxed shadow-sm">${escapeHTML(post.content)}</div>
+                        </div>
+                        <img src="${userAvatar}" data-uid="${currentUserId}" onclick="openUserProfile(this)" class="w-9 h-9 rounded-full flex-shrink-0 mt-5 border border-slate-200 object-cover shadow-sm cursor-pointer hover:opacity-80">
+                    </div>`;
+                } else {
+                    bubbleHtml = `
+                    <div class="flex justify-start gap-3 mb-4">
+                        <img src="${userAvatar}" data-uid="${post.user_id}" onclick="openUserProfile(this)" class="w-9 h-9 rounded-full flex-shrink-0 mt-5 border border-slate-200 object-cover shadow-sm cursor-pointer hover:opacity-80">
+                        <div class="flex flex-col items-start">
+                            <div class="text-[10px] font-bold text-slate-400 mb-1 ml-1 cursor-pointer hover:text-emerald-600" data-uid="${post.user_id}" onclick="openUserProfile(this)">${escapeHTML(post.game_name)} · ${formattedTime.split(' ')[1]}</div>
+                            <div class="bubble-other p-3.5 text-sm leading-relaxed shadow-sm">${escapeHTML(post.content)}</div>
+                        </div>
+                    </div>`;
+                }
+                return timeHtml + bubbleHtml;
+            }).join('');
+            
+            const area = document.getElementById('forum-public-area');
+            area.scrollTop = area.scrollHeight;
+        }
+
+        async function submitReport() {
+            if (!getAuthToken()) return showToast("请先登录");
+            const reported = document.getElementById('reported').value; const reason = document.getElementById('reason').value;
+            if(!reported || !reason) return showToast("请填完整");
+            const btn = document.getElementById('submit-btn'); btn.disabled = true; btn.innerText = "提交中...";
+            
+            const res = await fetch(`${SUPABASE_URL}/functions/v1/clever-handler`, { 
+                method: 'POST', headers: getAuthHeaders(), 
+                body: JSON.stringify({ action: 'report', reported, reason }) 
+            });
+            const data = await res.json();
+            btn.disabled = false; btn.innerText = "确认提交";
+
+            if (!res.ok) return showToast(data.error || "提交失败");
+            
+            showToast("举报成功"); document.getElementById('reported').value = ''; document.getElementById('reason').value = '';
+        }
+
+        async function uploadPcapToServer(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (!getAuthToken()) return showToast("请先登录");
+
+            const statusDiv = document.getElementById('upload-status');
+            const uploadBtn = document.getElementById('btn-upload-pcap');
+            const resultContainer = document.getElementById('battle-result-container');
+            const tablesWrapper = document.getElementById('tables-wrapper');
+            
+            statusDiv.classList.remove('hidden');
+            statusDiv.innerHTML = "<span class='text-emerald-600 font-bold'>⚡ 前端极速过滤中，请稍候...</span>";
+            uploadBtn.style.pointerEvents = "none";
+            uploadBtn.style.opacity = "0.7";
+            resultContainer.classList.add('hidden');
+            tablesWrapper.innerHTML = "";
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const buffer = new Uint8Array(e.target.result);
+                const tcpStreams = new Map();
+
+                if (buffer.length >= 24) {
+                    const linkType = buffer[20] | (buffer[21] << 8) | (buffer[22] << 16) | (buffer[23] << 24);
+                    let offset = 24;
+                    while (offset < buffer.length - 16) {
+                        const inclLen = (buffer[offset + 8] | (buffer[offset + 9] << 8) | (buffer[offset + 10] << 16) | (buffer[offset + 11] << 24)) >>> 0;
+                        offset += 16;
+                        if (offset + inclLen > buffer.length) break;
+                        const packet = buffer.slice(offset, offset + inclLen);
+                        offset += inclLen;
+
+                        let ipOffset = 14;
+                        if (linkType === 101 || linkType === 12 || linkType === 0) ipOffset = 0;
+                        else if (linkType === 113) ipOffset = 16;
+
+                        if (packet.length > ipOffset + 20) {
+                            const version = packet[ipOffset] >> 4;
+                            if (version === 4) {
+                                const ipHeaderLength = (packet[ipOffset] & 0x0F) * 4;
+                                const proto = packet[ipOffset + 9];
+                                if (proto === 6) {
+                                    const srcIP = packet.slice(ipOffset + 12, ipOffset + 16).join('.');
+                                    const dstIP = packet.slice(ipOffset + 16, ipOffset + 20).join('.');
+                                    const tcpOffset = ipOffset + ipHeaderLength;
+                                    
+                                    if (packet.length >= tcpOffset + 20) {
+                                        const srcPort = (packet[tcpOffset] << 8) | packet[tcpOffset + 1];
+                                        const dstPort = (packet[tcpOffset + 2] << 8) | packet[tcpOffset + 3];
+                                        const seq = ((packet[tcpOffset + 4] << 24) | (packet[tcpOffset + 5] << 16) | (packet[tcpOffset + 6] << 8) | packet[tcpOffset + 7]) >>> 0;
+                                        
+                                        const tcpHeaderLength = (packet[tcpOffset + 12] >> 4) * 4;
+                                        const payloadOffset = tcpOffset + tcpHeaderLength;
+                                        
+                                        if (payloadOffset < packet.length) {
+                                            const payload = packet.slice(payloadOffset);
+                                            let hasZlib = false;
+                                            for (let i = 0; i < payload.length - 1; i++) {
+                                                if (payload[i] === 0x78 && (payload[i + 1] === 0x9c || payload[i + 1] === 0x01 || payload[i + 1] === 0xda)) { hasZlib = true; break; }
+                                            }
+                                            if (hasZlib) {
+                                                const streamKey = `${srcIP}:${srcPort}-${dstIP}:${dstPort}`;
+                                                if (!tcpStreams.has(streamKey)) tcpStreams.set(streamKey, []);
+                                                tcpStreams.get(streamKey).push({ seq, payload });
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (tcpStreams.size === 0) {
+                    statusDiv.innerHTML = `<span class="text-red-500 font-bold">❌ 文件中未发现有效的游戏数据流</span>`;
+                    uploadBtn.style.pointerEvents = "auto";
+                    uploadBtn.style.opacity = "1";
+                    return;
+                }
+
+                const payloadArrays = [];
+                for (const streamData of tcpStreams.values()) {
+                    streamData.sort((a, b) => a.seq - b.seq);
+                    
+                    const uniquePayloads = [];
+                    let lastSeq = -1;
+                    for (const d of streamData) {
+                        if (d.seq !== lastSeq) {
+                            uniquePayloads.push(d.payload);
+                            lastSeq = d.seq;
+                        }
+                    }
+
+                    const totalLen = uniquePayloads.reduce((acc, val) => acc + val.length, 0);
+                    const megaBuf = new Uint8Array(totalLen);
+                    let pOff = 0;
+                    for (const p of uniquePayloads) { megaBuf.set(p, pOff); pOff += p.length; }
+                    
+                    let binary = '';
+                    const chunkSize = 8192;
+                    for (let i = 0; i < megaBuf.length; i += chunkSize) {
+                        binary += String.fromCharCode.apply(null, megaBuf.subarray(i, i + chunkSize));
+                    }
+                    payloadArrays.push(btoa(binary));
+                }
+
+                let totalSize = payloadArrays.reduce((a, s) => a + s.length, 0);
+                if (totalSize > 1.5 * 1024 * 1024) {
+                    statusDiv.innerHTML = `<span class="text-orange-500 font-bold">⚠️ 数据流过大（${(totalSize/1024/1024).toFixed(2)}MB），请缩小抓包范围</span>`;
+                    uploadBtn.style.pointerEvents = "auto";
+                    uploadBtn.style.opacity = "1";
+                    return;
+                }
+                if (payloadArrays.length > 500) {
+                    statusDiv.innerHTML = `<span class="text-orange-500 font-bold">⚠️ 连接数过多（${payloadArrays.length} 个），请缩小抓包范围</span>`;
+                    uploadBtn.style.pointerEvents = "auto";
+                    uploadBtn.style.opacity = "1";
+                    return;
+                }
+
+                statusDiv.innerHTML = "<span class='text-emerald-600 font-bold'>⚙️ 后端深度拆包解压中...</span>";
+                
+                try {
+                    const res = await fetch(`${SUPABASE_URL}/functions/v1/clever-handler`, {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ action: 'upload_pcap', streams: payloadArrays })
+                    });
+                    
+                    const data = await res.json();
+                    
+                    if (res.status === 429) {
+                        statusDiv.innerHTML = `<span class="text-orange-500 font-bold">⚠️ ${data.error}</span>`;
+                        return; 
+                    }
+                    
+                    if (!res.ok) throw new Error(data.error || "解析失败");
+
+                    if (data.data.length === 0) {
+                        statusDiv.innerHTML = `<span class="text-blue-500 font-bold">解析完成，但今日战报已被其他兄弟上传过，暂无新增</span>`;
+                        return;
+                    }
+
+                    statusDiv.innerHTML = `<span class="text-emerald-500 font-bold">✅ 成功提取 ${data.data.length} 条攻城战报</span>`;
+                    showToast("解析成功");
+                    
+                    renderTables(data.data);
+
+                } catch (err) {
+                    statusDiv.innerHTML = `<span class="text-red-500 font-bold">❌ ${err.message}</span>`;
+                } finally {
+                    uploadBtn.style.pointerEvents = "auto";
+                    uploadBtn.style.opacity = "1";
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function renderTables(data) {
+            const grouped = {};
+            globalExportData = [];
+
+            data.forEach(item => {
+                const union = item.attack_union || '未知同盟';
+                const loc = item.location || '未知城池';
+                const key = `${union}_${loc}`;
+
+                if (!grouped[key]) {
+                    grouped[key] = { union, loc, players: {} };
+                }
+                const p = item.attack_name || '未知玩家';
+                if (!grouped[key].players[p]) {
+                    grouped[key].players[p] = { 主力: 0, 拆迁: 0, 斯巴达: 0 };
+                }
+                const type = item.team_type;
+                if (grouped[key].players[p][type] !== undefined) {
+                    grouped[key].players[p][type]++;
+                }
+            });
+
+            const wrapper = document.getElementById('tables-wrapper');
+            wrapper.innerHTML = "";
+
+            for (const key in grouped) {
+                const group = grouped[key];
+                let tableHTML = `
+                <div class="glass-card overflow-hidden">
+                    <div class="bg-slate-50/80 px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+                        <h3 class="text-base font-extrabold text-slate-800 tracking-tight">${escapeHTML(group.union)} · ${escapeHTML(group.loc)}</h3>
+                        <span class="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100">攻城考勤</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-slate-600">
+                            <thead class="text-[11px] uppercase bg-white text-slate-400 font-bold tracking-wider border-b border-slate-50">
+                                <tr>
+                                    <th class="px-6 py-4 w-1/3">玩家名字</th>
+                                    <th class="px-3 py-4 text-center text-rose-500">主力</th>
+                                    <th class="px-3 py-4 text-center text-blue-500">拆迁</th>
+                                    <th class="px-3 py-4 text-center text-amber-500">斯巴达</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50">
+                `;
+
+                for (const pName in group.players) {
+                    const stats = group.players[pName];
+                    tableHTML += `
+                        <tr class="bg-white hover:bg-slate-50/50 transition-colors">
+                            <td class="px-6 py-4 font-bold text-slate-800">${escapeHTML(pName)}</td>
+                            <td class="px-3 py-4 text-center font-extrabold ${stats.主力 > 0 ? 'text-rose-500' : 'text-slate-200'}">${stats.主力} <span class="text-[10px] font-medium text-slate-400">次</span></td>
+                            <td class="px-3 py-4 text-center font-extrabold ${stats.拆迁 > 0 ? 'text-blue-500' : 'text-slate-200'}">${stats.拆迁} <span class="text-[10px] font-medium text-slate-400">次</span></td>
+                            <td class="px-3 py-4 text-center font-extrabold ${stats.斯巴达 > 0 ? 'text-amber-500' : 'text-slate-200'}">${stats.斯巴达} <span class="text-[10px] font-medium text-slate-400">次</span></td>
+                        </tr>
+                    `;
+                    
+                    globalExportData.push({
+                        同盟: group.union, 城池: group.loc, 玩家: pName,
+                        主力次数: stats.主力, 拆迁次数: stats.拆迁, 斯巴达次数: stats.斯巴达
+                    });
+                }
+
+                tableHTML += `</tbody></table></div></div>`;
+                wrapper.innerHTML += tableHTML;
+            }
+
+            document.getElementById('battle-result-container').classList.remove('hidden');
+        }
+
+        async function exportTableToCSV() {
+            if (globalExportData.length === 0) return showToast("没有数据可导出");
+            
+            let csvContent = "\uFEFF";
+            csvContent += "同盟,城池,玩家名字,主力次数,拆迁次数,斯巴达次数\n";
+            
+            const safeStr = (s) => {
+                let str = String(s);
+                if (/^[=+\-@\t\r]/.test(str)) str = "'" + str;
+                return `"${str.replace(/"/g, '""')}"`;
+            };
+
+            globalExportData.forEach(row => {
+                csvContent += `${safeStr(row.同盟)},${safeStr(row.城池)},${safeStr(row.玩家)},${row.主力次数},${row.拆迁次数},${row.斯巴达次数}\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `攻城考勤_${new Date().getTime()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast("导出成功，云端数据已销毁");
+            
+            document.getElementById('battle-result-container').classList.add('hidden');
+            document.getElementById('tables-wrapper').innerHTML = "";
+            globalExportData = [];
+
+            try {
+                await fetch(`${SUPABASE_URL}/functions/v1/clever-handler`, {
+                    method: 'POST', 
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ action: 'cleanup_battles' })
+                });
+            } catch (e) {}
+        }
+
+        function copyEmail() {
+            navigator.clipboard.writeText("2292880441@qq.com").then(() => showToast("邮箱已复制"));
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('app_token');
+            localStorage.removeItem('app_user_id');
+            localStorage.removeItem('app_game_name');
+            window.location.reload();
+        }
+
+        async function init() {
+            const token = getAuthToken();
+            
+            if (!token) {
+                document.getElementById('auth-modal').classList.remove('hidden');
+                document.getElementById('mine-version').innerText = "v" + APP_VERSION;
+                document.getElementById('mine-avatar-img').src = PRESET_AVATARS[0];
+            } else {
+                document.getElementById('reporter').value = currentGameName || "";
+                document.getElementById('mine-avatar-img').src = currentAvatar ? `${currentAvatar}?t=${Date.now()}` : PRESET_AVATARS[0];
+                updateMineTab();
+
+                const res = await fetch(`${SUPABASE_URL}/functions/v1/clever-handler`, {
+                    method: 'POST', headers: getAuthHeaders(),
+                    body: JSON.stringify({ action: 'verify_user' })
+                });
+                const vd = await res.json();
+                
+                if (vd.current_version && checkVersion(vd.current_version)) return;
+                if (vd.latest_url && checkRedirect(vd.latest_url)) return;
+                if (checkAppStatus(vd)) return;
+
+                if (vd.success) {
+                    currentGameName = vd.user.game_name; currentBio = vd.user.bio || "这个人很懒..."; currentAvatar = vd.user.avatar || "";
+                    updateMineTab();
+                } else {
+                    handleLogout();
+                }
+            }
+        }
+
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
